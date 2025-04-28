@@ -1,8 +1,7 @@
 ------------------------------------------------------------------------
-
-Project title: "Heart "
-
-author: "Yuan-Yu Lin" date: "`r Sys.Date()`"
+Project title: " AI analytics model for heart failure predictions" 
+author: "LYY" 
+date: "`r Sys.Date()`"
 
 ```{r}
 library(plotly)
@@ -53,9 +52,6 @@ age_histogram
 
 
 ```
-
-
-
 
 ```{r}
 #Rest BP
@@ -132,8 +128,6 @@ cholesterol_histogram <- plot_histogram(raw_data$Cholesterol, cholesterol_densit
 cholesterol_histogram
 ```
 
-
-
 ```{r}
 #Max_HR
 summary(raw_data$MaxHR)
@@ -149,7 +143,3 @@ maxHR_histogram <- plot_histogram(raw_data$MaxHR, maxHR_density_distribution, "M
 
 maxHR_histogram
 ```
-
-
-
-
