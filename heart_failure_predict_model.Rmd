@@ -1,14 +1,21 @@
 ------------------------------------------------------------------------
-Project title: " AI analytics model for heart failure predictions" 
-author: "LYY" 
-date: "`r Sys.Date()`"
+
+# Project title: " AI analytics model for heart failure predictions"
+
+## Author: "LYY"
+
+## Date: "`r Sys.Date()`"
 
 ```{r}
 library(plotly)
 library(ggplot2)
 ```
 
-# import CSV
+## import CSV
+
+### The data from kaggle.com
+
+#### <https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction>
 
 ```{r}
 raw_data <- read.csv("heart_failure_prediction_dataset.csv")
@@ -16,7 +23,7 @@ raw_data <- read.csv("heart_failure_prediction_dataset.csv")
 
 ```
 
-# overview the dataset
+## overview the dataset
 
 ```{r}
 #filter zero in the column of cholesterol
@@ -27,7 +34,7 @@ summary(raw_data)
 str(raw_data)
 ```
 
-# Visualization of dataset (plotly)
+## Visualization of dataset (plotly)
 
 ```{r}
 # Age 
@@ -80,6 +87,7 @@ restBP_histogram
 ```
 
 ```{r}
+## Function plot_histogram for Probability density
 plot_histogram <- function(data, density_distribution, data_column ,mean_, sd_, graph_title, y_axis_weight=1) {
   plot_ly(x = ~data, type = "histogram", histnorm = "probability") %>%
     add_trace(
