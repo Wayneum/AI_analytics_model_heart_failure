@@ -1,0 +1,145 @@
+------------------------------------------------------------------------
+Project title: " AI analytics model for heart failure predictions" 
+author: "LYY" 
+date: "`r Sys.Date()`"
+
+```{r}
+library(plotly)
+library(ggplot2)
+```
+
+# import CSV
+
+```{r}
+raw_data <- read.csv("heart_failure_prediction_dataset.csv")
+
+
+```
+
+# overview the dataset
+
+```{r}
+#filter zero in the column of cholesterol
+raw_data <- raw_data[raw_data$Cholesterol !=0, ]
+
+head(raw_data)
+summary(raw_data)
+str(raw_data)
+```
+
+# Visualization of dataset (plotly)
+
+```{r}
+# Age 
+summary(raw_data$Age)
+age_density<- density(raw_data$Age)
+plot_ly(x=age_density$x, y=age_density$y, type = "scatter", mode = "line", fill = "tozeroy", name = "Density") %>%
+  layout(title='Density of (%)Age', xaxis = list (title = 'Age'), yaxis = list (title = 'Density'))
+
+## The distribution of Age 
+mean_age <- mean(raw_data$Age)
+sd_age <-sd(raw_data$Age)
+rand1000_age <- rnorm(10000, mean=mean_age, sd=sd_age)
+age_density_distribution <- density(rand1000_age, bw =1)
+age_histogram <-plot_ly(x=~raw_data$Age, type="histogram", histnorm = "probability", name = "Age Histogram") %>% add_trace(x=~age_density_distribution$x, y=~2.5*age_density_distribution$y,type = "scatter", mode = "lines", opacity=0.1, fill = "tozeroy", name = "Normal Density") 
+
+  #add label and  the 68−95−99.7 line.
+age_histogram<-age_histogram %>% layout(title='Age Histogram & Model Distribution', xaxis = list(title = "Age"), yaxis = list(title = "relative frequency/density"), legend = list(orientation = 'h'), shapes = list(list(type = "line", x0 = mean_age, x1 = mean_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "black", dash="dash")),list(type = "line", x0 = mean_age - sd_age, x1 = mean_age - sd_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "red", dash="dot")), list(type = "line", x0 = mean_age + sd_age, x1 = mean_age + sd_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "red", dash="dot")), list(type = "line", x0 = mean_age - 2*sd_age, x1 = mean_age - 2*sd_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "blue", dash="dot")),
+      list(type = "line", x0 = mean_age + 2*sd_age, x1 = mean_age + 2*sd_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "blue", dash="dot")),
+      list(type = "line", x0 = mean_age - 3*sd_age, x1 = mean_age - 3*sd_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "green", dash="dot")),
+      list(type = "line", x0 = mean_age + 3*sd_age, x1 = mean_age + 3*sd_age, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "green", dash="dot"))))
+age_histogram
+
+
+```
+
+```{r}
+#Rest BP
+summary(raw_data$RestingBP)
+restBP_density<- density(raw_data$RestingBP)
+plot_ly(x=restBP_density$x, y=restBP_density$y, type = "scatter", mode = "line", fill = "tozeroy", name = "Density") %>%
+  layout(title='Density of (%)Rest BP', xaxis = list (title = 'Resting Blood Pressure'), yaxis = list (title = 'Density'))
+
+
+## The distribution of resting BP
+mean_restBP <- mean(raw_data$RestingBP)
+sd_restBP <-sd(raw_data$RestingBP)
+rand1000_restBP <- rnorm(10000, mean=mean_restBP, sd=sd_restBP)
+restBP_density_distribution <- density(rand1000_restBP, bw =1)
+restBP_histogram <-plot_ly(x=~raw_data$RestingBP, type="histogram", histnorm = "probability", name = "Resting Blood pressure Histogram") %>%
+  add_trace(x=~restBP_density_distribution$x, y=~6*restBP_density_distribution$y,type = "scatter", mode = "lines", opacity=0.1, fill = "tozeroy", name = "Normal Density") 
+
+
+  #add label and  the 68−95−99.7 line.
+restBP_histogram <-restBP_histogram %>% layout(title='resting Blood pressure Histogram &  Distribution', xaxis = list(title = "resting blood pressure"), yaxis = list(title = "relative frequency/density"), legend = list(orientation = 'h'), shapes = list(list(type = "line", x0 = mean_restBP, x1 = mean_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "black", dash="dash")),list(type = "line", x0 = mean_restBP - sd_restBP, x1 = mean_restBP - sd_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "red", dash="dot")), list(type = "line", x0 = mean_restBP + sd_restBP, x1 = mean_restBP + sd_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "red", dash="dot")), list(type = "line", x0 = mean_restBP - 2*sd_restBP, x1 = mean_restBP - 2*sd_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "blue", dash="dot")),
+      list(type = "line", x0 = mean_restBP + 2*sd_restBP, x1 = mean_restBP + 2*sd_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "blue", dash="dot")),
+      list(type = "line", x0 = mean_restBP - 3*sd_restBP, x1 = mean_restBP - 3*sd_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "green", dash="dot")),
+      list(type = "line", x0 = mean_restBP + 3*sd_restBP, x1 = mean_restBP + 3*sd_restBP, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "green", dash="dot"))))
+restBP_histogram
+
+```
+
+```{r}
+plot_histogram <- function(data, density_distribution, data_column ,mean_, sd_, graph_title, y_axis_weight=1) {
+  plot_ly(x = ~data, type = "histogram", histnorm = "probability") %>%
+    add_trace(
+      x = ~density_distribution$x,
+      y = ~ y_axis_weight*density_distribution$y,
+      type = "scatter",
+      mode = "lines",
+      opacity = 0.1,
+      fill = "tozeroy",
+      name = "Normal Density"
+    ) %>%
+    layout(
+      title = graph_title,
+      xaxis = list(title = data_column ),
+      yaxis = list(title = "Relative Frequency / Density"),
+      legend = list(orientation = 'h'),
+      shapes = list(
+        list(type = "line", x0 = mean_, x1 = mean_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "black", dash = "dash")),
+        list(type = "line", x0 = mean_ - sd_, x1 = mean_ - sd_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "red", dash = "dot")),
+        list(type = "line", x0 = mean_ + sd_, x1 = mean_ + sd_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "red", dash = "dot")),
+        list(type = "line", x0 = mean_ - 2 * sd_, x1 = mean_ - 2 * sd_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "blue", dash = "dot")),
+        list(type = "line", x0 = mean_ + 2 * sd_, x1 = mean_ + 2 * sd_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "blue", dash = "dot")),
+        list(type = "line", x0 = mean_ - 3 * sd_, x1 = mean_ - 3 * sd_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "green", dash = "dot")),
+        list(type = "line", x0 = mean_ + 3 * sd_, x1 = mean_ + 3 * sd_, y0 = 0, y1 = 1, xref = "x", yref = "paper", line = list(color = "green", dash = "dot"))
+      )
+    )
+}
+
+raw_data$Cholesterol
+
+# cholesterol
+summary(raw_data$Cholesterol,na.rm = T)
+
+cholesterol_density <- density(raw_data$Cholesterol, na.rm = T)
+cholesterol_density
+plot_ly(x=cholesterol_density$x, y=cholesterol_density$y, type = "scatter", mode = "line", fill = "tozeroy", name = "Density") %>%
+  layout(title='Density of (%)Chelesterol', xaxis = list (title = 'cholesterol'), yaxis = list (title = 'Density'))
+
+## The distribution of cholesterol
+mean_cholesterol <- mean(raw_data$Cholesterol)
+sd_cholesterol <-sd(raw_data$Cholesterol)
+rand1000_colesterol <- rnorm(10000, mean=mean_cholesterol, sd=sd_cholesterol)
+cholesterol_density_distribution <- density(rand1000_colesterol, bw =1)
+cholesterol_histogram <- plot_histogram(raw_data$Cholesterol, cholesterol_density_distribution, "Cholesterol", mean_cholesterol, sd_cholesterol, "Cholesterol Histogram & Distribution", 8)
+
+cholesterol_histogram
+```
+
+```{r}
+#Max_HR
+summary(raw_data$MaxHR)
+max_HR <- density(raw_data$MaxHR)
+plot_ly(x=max_HR$x, y=max_HR$y, type = "scatter", mode = "line", fill = "tozeroy", name = "Density") %>%
+  layout(title='Density of max HR', xaxis = list (title = 'Max Heart Rate'), yaxis = list (title = 'Density'))
+
+mean_maxHR <- mean(raw_data$MaxHR)
+sd_maxHR <-sd(raw_data$MaxHR)
+rand1000_MaxHR <- rnorm(10000, mean=mean_maxHR, sd=sd_maxHR)
+maxHR_density_distribution <- density(rand1000_MaxHR, bw =1)
+maxHR_histogram <- plot_histogram(raw_data$MaxHR, maxHR_density_distribution, "MaxHR", mean_maxHR, sd_maxHR, "Max Heart Rate Histogram & Distribution", 6)
+
+maxHR_histogram
+```
