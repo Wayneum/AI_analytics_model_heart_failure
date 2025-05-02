@@ -1,14 +1,36 @@
-------------------------------------------------------------------------
-
-# Project title: " AI analytics model for heart failure predictions"
-
-## Author: "LYY"
-
-## Date: "`r Sys.Date()`"
+---
+title: 'DSPA2: Data Science and Predictive Analytics (UMich HS650)'
+author: "<h3>SOCR/MIDAS (Yuan-Yu Lin)</h3>"
+date: "`r format(Sys.time(), '%B %Y')`"
+output:
+  html_document: null
+  theme: spacelab
+  pdf_document: default
+tags:
+- DSPA
+- SOCR
+- MIDAS
+- Big Data
+- Predictive Analytics
+subtitle: <h2><u>AI analytics model for heart failure predictions</u></h2>
+highlight: tango
+includes:
+  before_body: SOCR_header.html
+toc: true
+number_sections: true
+toc_depth: 3
+toc_float:
+  collapsed: false
+smooth_scroll: true
+code_folding: show
+self_contained: true
+---
 
 ```{r}
 library(plotly)
 library(ggplot2)
+library(gmodels)
+library(psych)
 ```
 
 ## import CSV
@@ -28,6 +50,11 @@ raw_data <- read.csv("heart_failure_prediction_dataset.csv")
 ```{r}
 #filter zero in the column of cholesterol
 raw_data <- raw_data[raw_data$Cholesterol !=0, ]
+
+Age <- raw_data$Age
+RestingBP <- raw_data$RestingBP
+Cholesterol <- raw_data$Cholesterol
+MaxrHR <- raw_data$MaxHR
 
 head(raw_data)
 summary(raw_data)
@@ -151,3 +178,142 @@ maxHR_histogram <- plot_histogram(raw_data$MaxHR, maxHR_density_distribution, "M
 
 maxHR_histogram
 ```
+
+## Exploring Relationships Between Variables
+```{r}
+# age and Resting BP
+scatter_plot_age_resting_BP <- plot_ly(x = ~raw_data$Age, y = ~raw_data$RestingBP, type = "scatter", 
+        mode = "markers") %>% layout(title='Age vs. Resting BP', 
+                                         xaxis = list (title = 'Age'), yaxis = list (title = 'Resting BP'))
+scatter_plot_age_resting_BP
+
+
+# age and Cholesterol 
+scatter_plot_age_cholesterol <- plot_ly(x = ~raw_data$Age, y = ~raw_data$Cholesterol, type = "scatter", 
+        mode = "markers") %>% layout(title='Age vs. Cholesterol', 
+                                         xaxis = list (title = 'Age'), yaxis = list (title = 'Cholesterol'))
+scatter_plot_age_cholesterol
+
+# Age and MaxHR
+scatter_plot_age_maxHR <- plot_ly(x = ~raw_data$Age, y = ~raw_data$MaxHR, type = "scatter", 
+        mode = "markers") %>% layout(title='Age vs. Max HR', 
+                                         xaxis = list (title = 'Age'), yaxis = list (title = 'Max HR'))
+scatter_plot_age_maxHR
+
+
+# RestingBP and Cholesterol
+scatter_plot_restingBP_cholesterol <- plot_ly(x = ~raw_data$RestingBP, y = ~raw_data$Cholesterol, type = "scatter", 
+        mode = "markers") %>% layout(title='resting BP vs. cholesterol', 
+                                         xaxis = list (title = 'resting BP'), yaxis = list (title = 'cholesterol'))
+scatter_plot_restingBP_cholesterol 
+
+# Resting BP and Max HR
+scatter_plot_restingBP_maxHR <- plot_ly(x = ~raw_data$RestingBP, y = ~raw_data$MaxHR, type = "scatter", 
+        mode = "markers") %>% layout(title='resting BP vs. Max HR', 
+                                         xaxis = list (title = 'Resting BP'), yaxis = list (title = 'Max HR'))
+scatter_plot_restingBP_maxHR
+
+
+
+# Cholesterol MaxHR
+
+scatter_plot_cholesterol_maxHR <- plot_ly(x = ~raw_data$Cholesterol, y = ~raw_data$MaxHR, type = "scatter", 
+        mode = "markers") %>% layout(title='cholesterol vs. Max HR', 
+                                         xaxis = list (title = 'cholesterol'), yaxis = list (title = 'Max HR'))
+scatter_plot_cholesterol_maxHR
+
+
+```
+
+## correlation matrix between age, rest BP, cholesterol, max HR
+
+```{r}
+list_feature <- c("Age", "RestingBP", "Cholesterol", "MaxHR")
+
+cor(raw_data[list_feature])
+
+
+```
+
+## Visualizing relationships
+
+```{r}
+clean_data_feature <- raw_data[, c("Age", "RestingBP", "Cholesterol", "MaxHR")] 
+feature_visualization <- plot_ly(raw_data) %>%
+  add_trace(
+    type = 'splom',
+    dimensions = list(
+      list(label = 'Age', values = ~Age),
+      list(label = 'Resting BP', values = ~RestingBP),
+      list(label = 'Cholesterol', values = ~Cholesterol),
+      list(label = 'MaxHR', values = ~MaxHR)  # <- fixed typo: value -> values
+    ),
+    marker = list(  # Set all points to blue
+      size = 7,
+      line = list(width = 1, color = 'rgb(230,230,230)')
+    )
+  ) %>%
+  layout(
+    title = 'Feature Relationship',
+    plot_bgcolor = 'rgba(240,240,240,0.95)'
+  )
+feature_visualization
+
+```
+
+## scatter plot matrix
+```{r}
+pairs.panels(raw_data[, c("Age", "RestingBP", "Cholesterol", "MaxHR")])
+```
+
+## Training a model on the data
+## 75% data as training data and 25% data as test data
+```{r}
+
+
+filter_data <-raw_data[, c("HeartDisease", "Age", "RestingBP", "Cholesterol", "MaxHR")] 
+n <- nrow(filter_data)
+train_indices <- sample(seq_len(n), size = 0.75 * n)
+training_data <- filter_data[train_indices, ]
+test_data <- filter_data[-train_indices, ]
+
+
+head(training_data)
+summary(training_data)
+str(training_data)
+
+head(test_data)
+summary(test_data)
+str(test_data)
+
+```
+
+
+## mathematical modeling - logistic regression
+```{r}
+#"Age", "RestingBP", "Cholesterol", "MaxHR" as the independent variable
+# Heart Disease as the dependent variable
+
+Y <- training_data$HeartDisease
+Y
+X <- cbind(rep(1, n=nrow(training_data)), training_data$Age, training_data$RestingBP, training_data$Cholesterol, training_data$ MaxHR)
+beta <- solve(t(X) %*% X) %*% t(X) %*% Y
+beta
+
+predict_model <- glm(HeartDisease~Age+RestingBP+Cholesterol+MaxHR, data=training_data, family = binomial)
+summary(predict_model)
+
+predicted_probs <- predict(predict_model, type = "response")
+predicted_classes <- ifelse(predicted_probs > 0.8, 1, 0)
+
+```
+
+
+
+```{r}
+
+```
+
+
+
+
